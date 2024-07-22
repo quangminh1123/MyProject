@@ -1,0 +1,45 @@
+﻿@model DA_WebC5.Models.Colors
+
+@{
+    ViewData["Title"] = "Tạo Mới";
+}
+
+<h1>Tạo Mới</h1>
+
+<h4>Màu Sắc</h4>
+<hr />
+<input type="color" id="colorPicker">
+<script>
+    const colorPicker = document.getElementById('colorPicker');
+    const colorInput = document.getElementById('colorInput');
+
+    colorPicker.addEventListener('input', function () {
+        const selectedColor = this.value;
+        colorInput.value = selectedColor;
+    });
+</script>
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Color" class="control-label">Màu</label>
+                <input asp-for="Color" class="form-control" id="colorInput" />
+                <span asp-validation-for="Color" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Tạo Mới" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Quay lại danh sách</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
