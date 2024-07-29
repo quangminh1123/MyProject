@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="ff235786f4d04e6787ebffcc11b8603e" Name="Diagram1">
+        <EntityTypeShape EntityType="QuanLyShopDongHoModel.ChiTietSanPham" Width="1.5" PointX="3" PointY="1.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyShopDongHoModel.DonHang" Width="1.5" PointX="5.25" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyShopDongHoModel.KhachHang" Width="1.5" PointX="3" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyShopDongHoModel.NhanVien" Width="1.5" PointX="3" PointY="7.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyShopDongHoModel.SanPham" Width="1.5" PointX="0.75" PointY="1.125" IsExpanded="true" />
+        <AssociationConnector Association="QuanLyShopDongHoModel.FK__ChiTietSan__MaSP__403A8C7D" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyShopDongHoModel.FK__DonHang__LoaiSP__4222D4EF" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyShopDongHoModel.FK__DonHang__MaNV__4316F928" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyShopDongHoModel.FK__DonHang__SDT__412EB0B6" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

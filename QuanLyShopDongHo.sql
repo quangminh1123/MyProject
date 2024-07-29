@@ -1,0 +1,86 @@
+﻿CREATE DATABASE QuanLyShopDongHo
+
+USE QuanLyShopDongHo
+
+CREATE TABLE NhanVien
+(
+MaNV VARCHAR(10) PRIMARY KEY,
+MatKhau VARCHAR(50) NOT NULL,
+VaiTro NVARCHAR(100) NOT NULL,
+HoTen NVARCHAR(100) NOT NULL,
+NgaySinh Date NOT NULL,
+SDT VARCHAR(12) NOT NULL,
+Email VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE SanPham
+(
+MaSanPham INT IDENTITY PRIMARY KEY,
+TenSanPham NVARCHAR(255) NOT NULL,
+HinhAnh NVARCHAR(200) NOT NULL,
+SoLuong INT NOT NULL,
+GiaNhap FLOAT NOT NULL,
+NgayNhap DATE NOT NULL,
+Mota NVARCHAR(255)
+);
+
+CREATE TABLE ChiTietSanPham
+(
+LoaiSP VARCHAR(10) PRIMARY KEY,
+TenLoai NVARCHAR(255) NOT NULL,
+MaSP INT NOT NULL,
+GiaBan FLOAT NOT NULL,
+KhuyenMai FLOAT DEFAULT 0,
+MoTa NVARCHAR(255)
+);
+
+CREATE TABLE KhachHang
+(
+TenKH NVARCHAR(255) NOT NULL,
+SDT VARCHAR(12) PRIMARY KEY,
+DiaChi NVARCHAR(255) NOT NULL
+);
+
+CREATE TABLE DonHang
+(
+MaDon VARCHAR(20) PRIMARY KEY,
+SDT VARCHAR(12) NOT NULL,
+TenKH NVARCHAR(255) NOT NULL,
+LoaiSP VARCHAR(10) NOT NULL,
+SoLuong INT NOT NULL,
+NgayIn DATE NOT NULL,
+MaNV VARCHAR(10) NOT NULL
+);
+
+ALTER TABLE ChiTietSanPham ADD FOREIGN KEY (MaSP) REFERENCES SanPham(MaSanPham)
+ALTER TABLE DonHang ADD FOREIGN KEY (SDT) REFERENCES KhachHang(SDT),
+FOREIGN KEY (LoaiSP) REFERENCES ChiTietSanPham(LoaiSP),
+FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
+
+INSERT INTO NhanVien
+VALUES	('NV01','e99a18c428cb38d5f260853678922e03',N'Quản Trị',N'Quang Minh','2004/11/26','0987654321','quangminh2045@gmail.com'),
+		('NV02','e99a18c428cb38d5f260853678922e03',N'Nhân Viên',N'Nguyễn Hiếu Nhã','2004/05/12','1234567890','nhanh@gmail.com'),
+		('admin','e00cf25ad42683b3df678c61f42c6bda',N'Quản Trị',N'admin','2000/11/21','0987456789','admin@gmail.com')
+
+INSERT INTO SanPham
+VALUES(N'Đồng hồ Casio','F:\FPOLY\2. DuAn_1_SD18301\DuAn1\AnhSP\Anh5.jpg','200','20000000','2023/11/21',N'Giá rẻ mại dô'),
+		(N'Đồng hồ Citizen','F:\FPOLY\2. DuAn_1_SD18301\DuAn1\AnhSP\Anh5.jpg','100','100000000','2023/11/21',N'Cần đầu tư')
+
+INSERT INTO ChiTietSanPham
+VALUES('CS01',N'Đồng hồ nam','1','150000','5',N'Giá rẻ mại dô'),
+		('CS02',N'Đồng hồ nữ','2','1500000','10',N'Cần đầu tư'),
+		('CS03',N'Bản giới hạn mạ vàng','2','3000000','10',N'Cần đầu tư')
+
+INSERT INTO KhachHang
+VALUES(N'Đặng Quang Minh','0472985278',N'Cần thơ'),
+		(N'Nguyễn Hoàng Tuấn Minh','0238759182',N'Cần thơ')
+
+INSERT INTO DonHang
+VALUES('DH01','0472985278',N'Đặng Quang Minh','CS03','2','2023/11/21','NV01'),
+		('DH02','0238759182',N'Nguyễn Hoàng Tuấn Minh','CS02','1','2023/11/21','NV01')
+
+SELECT * FROM NhanVien
+SELECT * FROM SanPham
+SELECT * FROM ChiTietSanPham
+SELECT * FROM KhachHang
+SELECT * FROM DonHang
