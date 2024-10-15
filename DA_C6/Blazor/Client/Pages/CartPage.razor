@@ -1,0 +1,286 @@
+﻿@page "/cartpage"
+@using Blazor.Shared.Model
+@inject HttpClient httpclient
+@inject IJSRuntime JSruntime
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text.Json
+
+<div class="container">
+	@if (!string.IsNullOrEmpty(errorMessage))
+	{
+		<div class="alert alert-danger" role="alert">
+			@errorMessage
+		</div>
+	}
+	<h1>Giỏ hàng</h1>
+	@*   @foreach(var item in cartItems)
+	{
+	@item.IDCart
+	} *@
+	<div class="row">
+		<div class="col-md-12">
+			<div class="cart-items">
+				@if(cartItems == null || !cartItems.Any())
+				{
+					<h4>Giỏ hàng của bạn trống!</h4>
+				}
+				@if (cartItems != null)
+				{
+					@foreach (var item in cartItems.Where(u => u.UserName == LoggedInUser))
+					{
+						@if (item != null)
+						{
+							var prodd = productdetailitems.FirstOrDefault(pd => pd.IDPDetail == item.IDPDetail);
+							if (prodd != null)
+							{
+								var size = sizeitems.FirstOrDefault(s => s.IDSize == prodd.Size);
+								var color = coloritems.FirstOrDefault(cl => cl.IDColor == prodd.IDColor);
+								var product = productitems.FirstOrDefault(p => p.IDProduct == prodd.IDProduct);
+								if (product != null)
+								{
+									<div class="cart-item mb-3">
+										<div class="cart-item mb-3">
+											<input type="checkbox" name="selectedProducts" value="@item.IDPDetail" @onchange="e => UpdateSelectedIDPDetails(e, item.IDPDetail)" />
+											<!-- Rest of your existing code... -->
+										</div>
+										<img src="/@product.Image" alt="Sản phẩm">
+										<div class="cart-item-info">
+											<h5 class="cart-item-title">@product.Name</h5>
+											<p>
+												@if (size != null && color != null)
+												{
+												<p>Kích thước - màu sắc: @size.SizeName - @color.Color</p> <!-- Hiển thị thông tin kích thước -->
+												}
+											</p>
+											<div class="col-md-2">
+												<div class="quantity-selector">
+													<form>
+														<button type="button" class="decrease-btn" @onclick="() => DecreaseQuantity(item)">-</button>
+														<input type="text" name="quantity" value="@item.Quantity" class="quantity-input" readonly>
+														<button type="button" class="increase-btn" @onclick="() => IncreaseQuantity(item)">+</button>
+													</form>
+												</div>
+											</div>
+										</div>
+										<div class="">
+											<a @onclick="() => RemoveItem(item.IDCart)" class="nav-link text-dark float-end ms-3">
+												<img src="/IMG/delete.png" alt="Cart" style="width: 24px; height: 24px;">
+											</a>
+											<p class="cart-item-price float-end text-black">
+												@{
+													var totalPrice = product.Price * item.Quantity; // Tính tổng giá sản phẩm
+												}
+												@totalPrice.ToString("N0") VNĐ
+											</p>
+										</div>
+									</div>
+								}
+							}
+						}
+						else
+						{
+							<h4>Thêm sản phẩm vào giỏ hàng của bạn</h4>
+						}
+					}
+
+				}
+				else
+				{
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				}
+
+			</div>
+		</div>
+
+		<div class="col-md-12">
+			<div class="cart-summary">
+				<a @onclick="DeleteAllCart" class="btn btn-danger btn-block">Xóa giỏ hàng</a>
+				<a @onclick="ProceedToCheckout" class="btn btn-dark btn-block btn-success">Mua hàng</a>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<h3>Gợi ý sản phẩm</h3>
+	<div class="product-list">
+
+		@if (productitems != null)
+		{
+			@foreach (var item in productitems.Take(4))
+			{
+				<div class="product-item">
+					<a href="productdetail/@item.IDProduct">
+						<img src="/@item.Image" alt="Đồng hồ">
+					</a>
+
+					<h5>@item.Name</h5>
+					<div class="row container-fluid justify-content-center text-center">
+						<p class="font-weight-bold col-sm-8 mb-1">4.5 <i class="bi bi-star-fill"></i></p>
+						<p class="font-weight-bold col-sm-4 mb-1">@item.Price.ToString("N0")</p>
+					</div>
+
+				</div>
+			}
+		}
+	</div>
+	@* 	<nav aria-label="Page navigation example">
+	<ul class="pagination">
+	<li class="page-item"><a class="page-link" href="#">Previous</a></li>
+	<li class="page-item"><a class="page-link" href="#">1</a></li>
+	<li class="page-item"><a class="page-link" href="#">2</a></li>
+	<li class="page-item"><a class="page-link" href="#">3</a></li>
+	<li class="page-item"><a class="page-link" href="#">Next</a></li>
+	</ul>
+	</nav> *@
+</div>
+
+
+
+@code {
+	private List<Cart> cartItems;
+	private List<Product> productitems;
+	private List<ProductDetails> productdetailitems;
+	private List<Sizes> sizeitems;
+	private List<Colors> coloritems;
+	private Cart c = new Cart();
+	private Product p = new Product();
+	private ProductDetails pd = new ProductDetails();
+	private Sizes s = new Sizes();
+	private Colors cl = new Colors();
+	private string LoggedInUser;
+	private Account acc;
+	private string errorMessage = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		LoggedInUser = await JSruntime.InvokeAsync<string>("localStorage.getItem", "LoggedInUser");
+		if (string.IsNullOrEmpty(LoggedInUser))
+		{
+			await JSruntime.InvokeVoidAsync("window.location.assign", "/login"); // Thay đổi "/cart" thành đường dẫn của trang giỏ hàng thực sự trong ứng dụng của bạn
+		}
+		else
+		{
+			// Thực hiện tải dữ liệu và các hành động khác
+			try
+			{
+				cartItems = await httpclient.GetFromJsonAsync<List<Cart>>("api/Cart/GetCarts");
+				productitems = await httpclient.GetFromJsonAsync<List<Product>>("api/Product/GetProducts");
+				productdetailitems = await httpclient.GetFromJsonAsync<List<ProductDetails>>("api/ProductDetail/GetProductDetails");
+				sizeitems = await httpclient.GetFromJsonAsync<List<Sizes>>("api/Size/GetSizes");
+				coloritems = await httpclient.GetFromJsonAsync<List<Colors>>("api/Color/GetColors");
+				acc = await httpclient.GetFromJsonAsync<Account>($"api/Account/GetUser/{LoggedInUser}");
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error: {ex.Message}");
+			}
+		}
+		await base.OnInitializedAsync();
+	}
+
+	private async Task RemoveItem(int id)
+	{
+		// Gửi yêu cầu xóa sản phẩm tương ứng với cartId
+		await httpclient.DeleteAsync($"api/Cart/DeleteCart/{id}");
+
+		// Cập nhật lại danh sách sản phẩm trong giỏ hàng sau khi xóa
+		cartItems = cartItems.Where(c => c.IDCart != id).ToList();
+	}
+
+	private async Task IncreaseQuantity(Cart item)
+	{
+		var productDetail = productdetailitems.FirstOrDefault(p => p.IDPDetail == item.IDPDetail);
+		if (productDetail != null && item.Quantity < productDetail.Quantity)
+		{
+			item.Quantity++;
+			await UpdateCartItem(item);
+		}
+		else
+		{
+			// Hiển thị thông báo lỗi
+			errorMessage = "Số lượng đã chọn vượt quá số lượng tối đa của sản phẩm!";
+		}
+	}
+
+	private async Task DecreaseQuantity(Cart item)
+	{
+		if (item.Quantity > 1)
+		{
+			item.Quantity--;
+			await UpdateCartItem(item);
+			errorMessage = "";
+		}
+	}
+
+	private async Task UpdateCartItem(Cart cart)
+	{
+		await httpclient.PutAsJsonAsync($"api/Cart/UpdateCart/{cart.IDCart}", cart);
+
+
+		var updatedItemIndex = cartItems.FindIndex(c => c.IDCart == cart.IDCart);
+		if (updatedItemIndex != -1)
+		{
+			cartItems[updatedItemIndex] = cart;
+			StateHasChanged(); // Cập nhật giao diện
+		}
+	}
+
+	private async Task DeleteAllCart()
+	{
+		LoggedInUser = await JSruntime.InvokeAsync<string>("localStorage.getItem", "LoggedInUser");
+		// Gửi yêu cầu xóa toàn bộ giỏ hàng của người dùng tương ứng
+		await httpclient.DeleteAsync($"api/Cart/Delete/{LoggedInUser}");
+		cartItems = new List<Cart>();
+	}
+
+	private List<int> selectedIDPDetails = new List<int>();
+
+	private async Task ProceedToCheckout()
+	{
+		await SaveToLocalStorage(selectedIDPDetails);
+
+		var storedItems = await JSruntime.InvokeAsync<string>("localStorage.getItem", "SelectedIDPDetails");
+		if (string.IsNullOrEmpty(storedItems))
+		{
+			errorMessage = "Vui lòng chọn ít nhất một sản phẩm để mua hàng!";
+		}
+		else
+		{
+			var selectedItems = JsonSerializer.Deserialize<List<int>>(storedItems);
+			if (selectedItems.Count == 0)
+			{
+				errorMessage = "Vui lòng chọn ít nhất một sản phẩm để mua hàng!";
+			}
+			else
+			{
+				await SaveToLocalStorage(selectedIDPDetails);
+				NavigationManager.NavigateTo("/checkout");
+			}
+		}
+	}
+
+	private void UpdateSelectedIDPDetails(ChangeEventArgs e, int idPDetail)
+	{
+		bool isSelected = Convert.ToBoolean(e.Value);
+		if (isSelected)
+		{
+			selectedIDPDetails.Add(idPDetail);
+		}
+		else
+		{
+			selectedIDPDetails.Remove(idPDetail);
+		}
+	}
+
+	private async Task SaveToLocalStorage(List<int> idPDetailValues)
+	{
+		var serializedValues = JsonSerializer.Serialize(idPDetailValues);
+		await JSruntime.InvokeVoidAsync("localStorage.setItem", "SelectedIDPDetails", serializedValues);
+	}
+
+}
+
+

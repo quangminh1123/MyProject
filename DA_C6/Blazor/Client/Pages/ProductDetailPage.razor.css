@@ -1,0 +1,136 @@
+﻿.radio-btn-image {
+    display: none;
+}
+
+    .radio-btn-image + label {
+        display: inline-block;
+        cursor: pointer;
+    }
+
+        .radio-btn-image + label img {
+            border-radius: 25px;
+            opacity: 0.5; /* Làm mờ ảnh khi chưa được chọn */
+        }
+
+    .radio-btn-image:checked + label img {
+        font-weight: bold; /* Đậm khi được chọn */
+        opacity: 1; /* Không làm mờ ảnh khi được chọn */
+    }
+
+
+.radio-btn-size {
+    display: none; /* Ẩn radio buttons mặc định */
+}
+
+    .radio-btn-size + label {
+        display: inline-block;
+        text-align: center;
+        align-content: center;
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+
+    .radio-btn-size:checked + label {
+        color: white; /* Màu văn bản khi radio button được chọn */
+    }
+
+    .radio-btn-size:not(:checked) + label {
+        opacity: 0.5; /* Làm mờ radio button khi chưa được chọn */
+        font-weight: normal; /* Trọng số phông chữ khi radio button chưa được chọn */
+    }
+
+
+.radio-btn-point {
+    display: none;
+}
+
+.radio-label {
+    display: inline-block;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    margin-right: 5px;
+    color: grey;
+}
+
+.radio-btn-point:checked ~ .radio-label,
+.radio-btn-point:checked ~ .radio-label ~ .radio-label {
+    color: gold;
+}
+
+.quantity-selector {
+    display: flex;
+    justify-content: center;
+    border-radius: 20px;
+    background-color: #f0f0f0; /* Màu nền trắng hoặc xám */
+    padding: 5px; /* Khoảng cách giữa các phần tử trong quantity-selector */
+}
+
+
+.quantity-selector button {
+    background-color: #ffffff; /* Màu nền trắng */
+    border: none;
+    cursor: pointer;
+    border-radius: 20px; /* Bo tròn ở ngoài rìa 2 bên dấu cộng và trừ số */
+}
+
+
+.quantity-input {
+    flex: 0 0 auto;
+    text-align: center;
+    border: none;
+    background-color: transparent;
+    width: 30px; /* Đảm bảo kích thước cố định cho input */
+    margin: 0 10px; /* Khoảng cách giữa input và các nút */
+}
+
+.decrease-btn,
+.increase-btn {
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ccc; /* Viền xung quanh nút */
+}
+
+.add-cart {
+    display: flex;
+    float: right;
+    background-color: black;
+    color: white;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    border-radius: 25px;
+    padding: 10px 15px;
+}
+
+.col-sm-3 .border {
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.col-sm-3 .container-fluid {
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.col-sm-3:hover .border {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    transform: translateY(-5px);
+}
+
+.col-sm-3:hover .container-fluid {
+    transform: translateY(-5px);
+}
+
+.imageQR {
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    object-fit: contain;
+}

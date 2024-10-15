@@ -1,0 +1,96 @@
+﻿@page "/AddImage/{id:int}"
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
+@using Admin.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject IWebHostEnvironment Environment
+@inject ImageResponse imageResponse
+@inject NavigationManager Navigation
+
+<h3>Thêm Ảnh Chi Tiết</h3>
+<a href="/UpdateProd/@id" class="btn btn-secondary">Quay Lại Trang Hiển Thị</a>
+
+<div class="upload-container">
+    <InputFile OnChange="HandleFileSelected" multiple />
+    <button @onclick="SaveFiles" class="btn btn-primary">Lưu</button>
+
+    <h3>Ảnh Đã Tải Lên</h3>
+    @if (uploadedImages.Any())
+    {
+        <div class="image-gallery">
+            @foreach (var imageUrl in uploadedImages)
+            {
+                <img src="@imageUrl" alt="Uploaded Image" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private List<IBrowserFile> filesToUpload = new List<IBrowserFile>();
+    private List<string> uploadedImages = new List<string>();
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        filesToUpload.Clear();
+        filesToUpload.AddRange(e.GetMultipleFiles());
+    }
+
+    private async Task SaveFiles()
+    {
+        if (!filesToUpload.Any())
+        {
+            return; // Không có tệp nào để lưu
+        }
+
+        try
+        {
+            var folderPath = Path.Combine(Environment.WebRootPath, "Image_Product");
+
+            // Tạo thư mục nếu chưa tồn tại
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            foreach (var file in filesToUpload)
+            {
+                var fileName = file.Name;
+                var filePath = Path.Combine(folderPath, fileName);
+
+                if (!File.Exists(filePath))
+                {
+                    await SaveFileAsync(file, filePath);
+                }
+
+                // Thêm ảnh vào cơ sở dữ liệu
+                await AddImageToDatabaseAsync(fileName);
+                uploadedImages.Add($"/Image_Product/{fileName}");
+            }
+
+            filesToUpload.Clear(); // Xóa danh sách sau khi lưu
+            Navigation.NavigateTo($"UpdateProd/{id}");
+        }
+        catch (Exception ex)
+        {
+            // Xử lý lỗi và hiển thị thông báo
+            Console.Error.WriteLine($"Lỗi khi lưu tệp: {ex.Message}");
+        }
+    }
+
+    private async Task SaveFileAsync(IBrowserFile file, string filePath)
+    {
+        using (var stream = file.OpenReadStream())
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await stream.CopyToAsync(fileStream);
+        }
+    }
+
+    private async Task AddImageToDatabaseAsync(string fileName)
+    {
+        var imageUrl = $"/Image_Product/{fileName}";
+        await imageResponse.AddImageAsync(imageUrl, id);
+    }
+}

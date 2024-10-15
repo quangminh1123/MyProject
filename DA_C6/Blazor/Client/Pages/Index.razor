@@ -1,0 +1,397 @@
+﻿@page "/"
+@inject HttpClient http
+
+
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+<!-- MDB -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.3.2/mdb.min.css" rel="stylesheet" />
+
+<style>
+    .features-item {
+        height: 100%;
+    }
+
+    .card {
+        height: 100%;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .col-sm-3 .border {
+        transition: box-shadow 0.3s, transform 0.3s;
+    }
+
+    .col-sm-3 .container-fluid {
+        transition: box-shadow 0.3s, transform 0.3s;
+    }
+
+    .col-sm-3:hover .border {
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        transform: translateY(-5px);
+    }
+
+    .col-sm-3:hover .container-fluid {
+        transform: translateY(-5px);
+    }
+
+    .prod {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .prod img {
+        max-height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .custom-class-img {
+        margin-top: 65.5px;
+    }
+
+</style>
+
+<!-- Carousel -->
+<div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <!-- Image with no mask -->
+            <div class="bg-image">
+                <img src="https://theme.hstatic.net/1000341630/1001071096/14/slideshow_3.jpg?v=848" class="img-fluid w-100" alt="hinh1">
+                <!-- Mask -->
+                <div class="mask">
+                    <div class="bottom-0 d-flex align-items-center h-100 text-center justify-content-start">
+                        <div class="col-md-12 col-lg-5">
+                            <h3 class="text-secondary">Chỉ từ $49.99</h3>
+                            <h1 class="display-3 text-dark">NEXTON</h1>
+                            <div class="position-relative mx-auto">
+                                <a class="btn btn btn-dark border-2 border-secondary position-absolute rounded-pill text-white h-auto w-45"
+                                   style="left: 37%;" asp-controller="Product" asp-action="Index">
+                                    Mua ngay
+                                    <i class="bi bi-search"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <!-- Image with no mask -->
+            <div class="bg-image">
+                <img src="https://theme.hstatic.net/1000341630/1001071096/14/slideshow_2.jpg?v=848" class="d-block w-100" alt="hinh2">
+                <!-- Mask -->
+                <div class="mask">
+                    <div class="bottom-0 d-flex align-items-center h-100 text-center justify-content-start">
+                        <div class="col-md-12 col-lg-5">
+                            <h3 class="text-secondary">Chỉ từ $49.99</h3>
+                            <h1 class="display-3 text-light">NEXTON</h1>
+                            <div class="position-relative mx-auto">
+                                <a class="btn btn btn-dark border-2 border-secondary position-absolute rounded-pill text-white h-auto w-45"
+                                   style="left: 37%;" asp-controller="Product" asp-action="Index">
+                                    Mua ngay
+                                    <i class="bi bi-search"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <!-- Image with no mask -->
+            <div class="bg-image">
+                <img src="https://theme.hstatic.net/1000341630/1001071096/14/slideshow_4.jpg?v=848" class="d-block w-100" alt="hinh3">
+                <!-- Mask -->
+                <div class="mask">
+                    <div class="bottom-0 d-flex align-items-center h-100 text-center justify-content-start">
+                        <div class="col-md-12 col-lg-5">
+                            <h3 class="text-secondary">Chỉ từ $49.99</h3>
+                            <h1 class="display-3 text-dark">NEXTON</h1>
+                            <div class="position-relative mx-auto">
+                                <a class="btn btn btn-dark border-2 border-secondary position-absolute rounded-pill text-white h-auto w-45"
+                                   style="left: 37%;" asp-controller="Product" asp-action="Index">
+                                    Mua ngay
+                                    <i class="bi bi-search"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- Cards -->
+<div class="container-fluid py-3">
+    <div class="container py-5">
+        <div class="row g-4">
+
+            <div class="container-fluid py-3">
+                <div class="container py-5">
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="features-item text-center rounded bg-light p-4">
+                                <div class="card">
+                                    <img src="https://img.freepik.com/free-vector/smiley-delivery-man-with-lovely-style_23-2147677399.jpg?t=st=1716138183~exp=1716141783~hmac=ed6ecff25a7515818503f0460d36bf10831648c1c3ab8bf71179468b89ed68fe&w=740" class="card-img-top"
+                                         alt="Free shipping" />
+                                    <div class="card-body">
+                                        <h5 class="card-title">Miễn phí giao hàng</h5>
+                                        <p class="card-text">Khi tổng hóa đơn trên 500.000d</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="features-item text-center rounded bg-light p-4">
+                                <div class="card">
+                                    <img src="https://img.freepik.com/free-vector/contactless-payment-with-two-smartphones_23-2147677483.jpg?t=st=1716137582~exp=1716141182~hmac=647e1b722ce247e54aa968cd96b3d78eb61b5608fef9177abf6f57ba24820e84&w=740" class="card-img-top"
+                                         alt="Secure payment" />
+                                    <div class="card-body">
+                                        <h5 class="card-title">An toàn khi giao dịch</h5>
+                                        <p class="card-text">100% bảo mật</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="features-item text-center rounded bg-light p-4">
+                                <div class="card">
+                                    <img src="https://img.freepik.com/free-vector/indian-rupee-currency-exchange_23-2148009228.jpg?t=st=1716137670~exp=1716141270~hmac=c3cbe808d1f10448a078b03cc36caac97cfd041698e123c6d8f4bb9f1bb749ef&w=740" class="card-img-top"
+                                         alt="Refund within 30 days" />
+                                    <div class="card-body">
+                                        <h5 class="card-title">Hoàn trả trong 30 ngày</h5>
+                                        <p class="card-text">Hoàn trả sản phẩm nếu như không mong muốn</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="features-item text-center rounded bg-light p-4">
+                                <div class="card">
+                                    <img src="https://img.freepik.com/free-vector/call-center-agent-concept-flat-style_23-2147947654.jpg?t=st=1716138278~exp=1716141878~hmac=25f365cdc8d95ca01b0a0fd7891e9782365c4c94741f877c4fc982a490e4c03f&w=740" class="card-img-top"
+                                         alt="24/7 support" />
+                                    <div class="card-body">
+                                        <h5 class="card-title">Hỗ trợ 24/7</h5>
+                                        <p class="card-text">Hỗ trợ bạn bất cứ lúc nào</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Cards -->
+<div class="container">
+    <h1>
+        Bắt đầu khám phá.
+        <span class="text-secondary">Những điều tốt đẹp đang chờ đợi bạn</span>
+    </h1>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="p-3 mb-2 bg-info-subtle text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Dành cho nam</h5>
+                        <p class="card-text">Chỉ từ 200.000 vnd</p>
+                        <a href="#" class="btn btn-primary float-end" data-mdb-ripple-init>
+                            Mua ngay
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="p-3 mb-2 bg-info-subtle text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Dành cho nữ</h5>
+                        <p class="card-text">Chỉ từ 180.000 vnd</p>
+                        <a href="#" class="btn btn-primary float-end" data-mdb-ripple-init>
+                            Mua ngay
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="p-3 mb-2 bg-info-subtle text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Phụ kiện</h5>
+                        <p class="card-text">Khám phá phụ kiện</p>
+                        <a href="#" class="btn btn-primary float-end" data-mdb-ripple-init>
+                            Mua ngay
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product -->
+<div class="container py-5">
+    <h1 class="tab-content">
+        Khuyến nghị.
+        <span class="text-secondary">Sản phẩm phù hợp nhất dành cho bạn</span>
+    </h1>
+    <section style="background-color: #eee;">
+        <div class="container py-3">
+            <div class="row">
+                @if (products != null && categories != null)
+                {
+                    @foreach (var x in products.Take(4).Where(sp => sp.Status.Equals("Bán")))
+                    {
+                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                            <div class="card position-relative">
+                                <div class="bg-info position-absolute top-0 end-0 rounded-circle d-flex align-items-center justify-content-center shadow-1-strong m-3"
+                                     style="width: 35px; height: 35px;">
+                                    <span class="text-white mb-0 small">
+                                        <i class="bi bi-bag-heart"></i>
+                                    </span>
+                                </div>
+                                <a href="productdetail/@x.IDProduct">
+                                    <img src="/@x.Image" class="card-img-top custom-class-img" alt="Ao" />
+                                </a>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="mb-0">@x.Name</h5>
+                                        <h5 class="text-dark mb-0">@x.Price.ToString("N0") đ</h5>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-0">
+                                        <p class="small"><a href="#!" class="text-muted">@categories.FirstOrDefault(z => z.IDCategory == x.IDCategory).Name</a></p>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+
+                                        <i class="fa fa-star text-warning me-2"></i>
+
+                                        <p class="text-muted mb-0">4.9 <span class="fw-bold">(98)</span></p>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="fw-bold">Loading...</div>
+                }
+
+            </div>      
+        </div>
+    </section>
+</div>
+
+<!-- Product -->
+<div class="container py-5">
+    <h1 class="tab-content">
+        Bán chạy nhất.
+        <span class="text-secondary">Bán chạy nhất trong tháng</span>
+    </h1>
+    <section style="background-color: #eee;">
+        <div class="container py-3">
+            <div class="row">
+                @if (products != null && categories != null)
+                {
+                    @foreach (var x in products.Take(4).Where(sp => sp.Status.Equals("Bán")))
+                    {
+                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+                            <div class="card position-relative">
+                                <div class="bg-info position-absolute top-0 end-0 rounded-circle d-flex align-items-center justify-content-center shadow-1-strong m-3"
+                                     style="width: 35px; height: 35px;">
+                                    <span class="text-white mb-0 small">
+                                        <i class="bi bi-bag-heart"></i>
+                                    </span>
+                                </div>
+                                <img src="/@x.Image" class="card-img-top custom-class-img" alt="Ao" />
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="mb-0">@x.Name</h5>
+                                        <h5 class="text-dark mb-0">@x.Price.ToString("N0") đ</h5>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-0">
+                                        <p class="small"><a href="#!" class="text-muted">@categories.FirstOrDefault(z => z.IDCategory == x.IDCategory).Name</a></p>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+
+                                        <i class="fa fa-star text-warning"></i>
+
+                                        <p class="text-muted mb-0">4.9 <span class="fw-bold">(98)</span></p>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="fw-bold">Loading...</div>
+                }
+
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Banner -->
+<div class="container py-3">
+    <div class="bg-image">
+        <img src="https://theme.hstatic.net/1000341630/1001071096/14/slideshow_1.jpg?v=848" class="img-fluid" alt="banner">
+        <!-- Mask -->
+        <div class="mask">
+            <div class="bottom-0 d-flex align-items-center h-100 text-center justify-content-start">
+                <div class="col-md-12 col-lg-5">
+                    <h5 class="text-secondary text-sm">Sản phẩm chính hãng 100%</h5>
+                    <div class="display-6 text-light">
+                        Thời trang hoàn toàn mới <br />
+                        Vật phẩm sưu tập
+                    </div>
+                    <h5 class="text-secondary text-sm">Chỉ từ $59,99</h5>
+                    <div class="position-relative mx-auto">
+                        <button type="submit"
+                                class="btn btn btn-dark border-2 border-secondary position-absolute rounded-pill text-white h-auto w-45"
+                                style="left: 40%;">
+                            Mua ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

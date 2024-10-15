@@ -1,0 +1,77 @@
+﻿@page "/AccountPage"
+@using Admin.Services
+@using Admin.Model
+@inject AccountResponse accountrespose
+@inject NavigationManager navigation
+
+<h3>Danh sách tài khoản</h3>
+
+@if (accountitems == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <table class="table table-hover text-center">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Họ và tên</th>
+                <th>Giới tính</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Vai trò</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var x in accountitems.Where(t => t.Role != "Admin"))
+            {
+                <tr>
+                    <td>@x.Email</td>
+                    <td>@x.Name</td>
+                    <td>@x.Gender</td>
+                    <td>@x.Phone</td>
+                    <td>@x.Address</td>
+                    <td>@x.Role</td>
+                    <td>
+                        <button type="button" class="btn btn-outline-success" @onclick="() => EditAccount(x.UserName)">Chỉnh sửa</button>
+                        <button type="button" class="btn btn-outline-danger" @onclick="() => BlockAccount(x.UserName)">Khóa</button>
+                        <button type="button" class="btn btn-outline-success" @onclick="() => UnBlockAccount(x.UserName)">Mở khóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    IEnumerable<Account> accountitems;
+    private Account accounts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        accountitems = await Task.Run(() => accountrespose.GetAccounts());
+    }
+
+    private async Task EditAccount(string User)
+    {
+        navigation.NavigateTo($"/EditAccountPage/{User}"); // Chuyển hướng đến trang chỉnh sửa
+    }
+
+    private async Task BlockAccount(string User)
+    {
+        accounts = await Task.Run(() => accountrespose.GetAccountById(User));
+        accounts.Role = "Banned";
+        var FindAccount = await Task.Run(() => accountrespose.UpdateAccount(User, accounts));
+        navigation.NavigateTo("AccountPage");
+    }
+
+    private async Task UnBlockAccount(string User)
+    {
+        accounts = await Task.Run(() => accountrespose.GetAccountById(User));
+        accounts.Role = "Member";
+        var FindAccount = await Task.Run(() => accountrespose.UpdateAccount(User, accounts));
+        navigation.NavigateTo("AccountPage");
+    }
+}
