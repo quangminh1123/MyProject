@@ -1,0 +1,732 @@
+﻿@page "/bill"
+@using SanGiaoDich_BrotherHood.Shared.Models
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsrunetime
+<!-- Breadcrumb -->
+<ul class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#"><i class="bi bi-house"></i> Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="#">Hóa đơn của bạn</a></li>
+</ul>
+
+<style>
+    /* Đảm bảo các thẻ card có chiều cao bằng nhau */
+    .card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 1px solid #ddd;
+        border-radius: 0.375rem;
+    }
+
+    .card-body {
+        flex-grow: 1; /* Cho phép phần nội dung trong thẻ card mở rộng và chiếm không gian còn lại */
+        padding: 15px;
+    }
+
+    .card-header {
+        background-color: #28a745;
+        color: white;
+        font-weight: bold;
+        padding: 10px 15px;
+        border-radius: 0.375rem 0.375rem 0 0;
+    }
+
+    .card-footer {
+        padding: 10px 15px;
+        background-color: #f1f8f6;
+        border-radius: 0 0 0.375rem 0.375rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        margin-bottom: 15px;
+    }
+
+    /* Tạo hiệu ứng hover cho các thẻ card */
+    .card:hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tab navigation */
+    .nav-pills .nav-link {
+        background-color: white;
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #28a745;
+            color: white;
+            border: 1px solid #218838;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: #e2f4e0;
+            color: #218838;
+        }
+
+    /* Sửa lại layout cho thẻ tab nội dung */
+    .tab-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .page-item {
+        list-style-type: none;
+    }
+
+    .page-link {
+        display: inline-block;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 0.375rem;
+    }
+
+    .pagination .page-item.selected .page-link {
+        background-color: #28A745 !important;
+        color: white !important;
+    }
+
+    .pagination .page-item .page-link:hover {
+        background-color: green;
+        color: white !important;
+    }
+</style>
+
+<!-- Nav Tabs -->
+<ul class="nav nav-pills nav-justified" id="billTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase" type="button" role="tab" aria-controls="purchase" aria-selected="true">
+            <i class="bi bi-bag"></i> Đơn mua
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sale-tab" data-bs-toggle="tab" data-bs-target="#sale" type="button" role="tab" aria-controls="sale" aria-selected="false">
+            <i class="bi bi-bag-check"></i> Đơn bán
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content mt-4" id="billTabContent">
+    <!-- Đơn mua -->
+    <div class="tab-pane fade show active" id="purchase" role="tabpanel" aria-labelledby="purchase-tab">
+        <!-- Search Section -->
+        <div class="mb-4 bg-light p-3 rounded shadow-sm">
+            <div class="row gy-3">
+                <div class="col-md-6">
+                    <label for="searchByFullName" class="form-label">Tìm kiếm theo Họ và tên:</label>
+                    <input id="searchByFullName" type="text" @bind="searchFullName" class="form-control" placeholder="Nhập họ và tên" />
+                </div>
+                <div class="col-md-4">
+                    <label for="searchByIDBill" class="form-label">Tìm kiếm theo ID Hóa đơn:</label>
+                    <input id="searchByIDBill" type="number" @bind="searchIDBill" class="form-control" placeholder="Nhập ID hóa đơn" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" @onclick="SearchBills">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards for Bills -->
+        @if (orderBills == null)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải dữ liệu...</span>
+                </div>
+            </div>
+        }
+        else if (!orderBills.Any(x => x.UserName == userName))
+        {
+            <div class="alert alert-warning text-center">Không có hóa đơn nào.</div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var bill in orderBills)
+                {
+                    <div class="">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="badge @GetStatusBadge(bill.Status)">@bill.Status</span>
+                                <h5 class="card-title">Đơn #@bill.IDBill</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text"><strong>Họ và tên:</strong> @bill.FullName</p>
+                                <p class="card-text"><strong>Số điện thoại:</strong> @bill.PhoneNumber</p>
+                                <p class="card-text"><strong>Địa chỉ:</strong> @bill.DeliveryAddress</p>
+                                <p class="card-text"><strong>Ngày đặt:</strong> @bill.OrderDate.ToString("dd/MM/yyyy")</p>
+                                <p class="card-text"><strong>Tổng tiền:</strong> @bill.Total.ToString("C")</p>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-info" @onclick="() => NavigateToBillDetails(bill.IDBill)">
+                                    <i class="bi bi-eye"></i> Xem chi tiết
+                                </button>
+                                @if (bill.Status == "Chờ xác nhận")
+                                {
+                                    <button class="btn btn-danger mr-3" @onclick="() => CancelBill(bill.IDBill)">
+                                        <i class="bi bi-x-circle"></i> Hủy xác nhận
+                                    </button>
+                                }
+                                @if (bill.Status == "Đã xác nhận")
+                                {
+                                    <button class="btn btn-info" @onclick="() => ReceivedBill(bill.IDBill)">
+                                        <i class="bi bi-check-circle"></i> Đã nhận
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        <!-- Phân trang -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "") m-2">
+                    <a class="page-link text-black" aria-label="Previous" @onclick="() => ChangePage(currentPage - 1)">
+                        <span aria-hidden="true"><i class="bi bi-caret-left-fill"></i></span>
+                    </a>
+                </li>
+                @for (var i = currentPage - 2; i <= currentPage + 2; i++)
+                {
+                    int j = i;
+                    if (i > 0 && i <= totalPages)
+                    {
+                        <li class="page-item @(currentPage == i ? "selected" : "") m-2">
+                            <a class="page-link text-black" @onclick="() => ChangePage(j)">
+                                <span>@i</span>
+                            </a>
+                        </li>
+                    }
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "") m-2">
+                    <a class="page-link text-black" aria-label="Next" @onclick="() => ChangePage(currentPage + 1)">
+                        <span aria-hidden="true"><i class="bi bi-caret-right-fill"></i></span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Đơn bán -->
+    <div class="tab-pane fade" id="sale" role="tabpanel" aria-labelledby="sale-tab">
+        <!-- Search Section -->
+        <div class="mb-4 bg-light p-3 rounded shadow-sm">
+            <div class="row gy-3">
+                <div class="col-md-6">
+                    <label for="searchByFullName" class="form-label">Tìm kiếm theo Họ và tên:</label>
+                    <input id="searchByFullName" type="text" @bind="searchSaleFullName" class="form-control" placeholder="Nhập họ và tên" />
+                </div>
+                <div class="col-md-4">
+                    <label for="searchByIDBill" class="form-label">Tìm kiếm theo ID Hóa đơn:</label>
+                    <input id="searchByIDBill" type="number" @bind="searchSaleIDBill" class="form-control" placeholder="Nhập ID hóa đơn" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" @onclick="SearchBills">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </div>
+        @if (billSales == null)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải dữ liệu...</span>
+                </div>
+            </div>
+        }
+        else if (!billSales.Any())
+        {
+            <div class="alert alert-warning text-center">Không có hóa đơn nào do bạn bán.</div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var bill in billSales)
+                {
+                    <div class="">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="badge @GetStatusBadge(bill.Status)">@bill.Status</span>
+                                <h5 class="card-title">Đơn #@bill.IDBill</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text"><strong>Họ và tên:</strong> @bill.FullName</p>
+                                <p class="card-text"><strong>Số điện thoại:</strong> @bill.PhoneNumber</p>
+                                <p class="card-text"><strong>Địa chỉ:</strong> @bill.DeliveryAddress</p>
+                                <p class="card-text"><strong>Ngày đặt:</strong> @bill.OrderDate.ToString("dd/MM/yyyy")</p>
+                                <p class="card-text"><strong>Tổng tiền:</strong> @bill.Total.ToString("C")</p>
+                            </div>
+                            <div class="card-footer">
+                                @if (bill.Status == "Chờ xác nhận")
+                                {
+                                    <button class="btn btn-success me-3" @onclick="() => AcceptBill(bill.IDBill)">
+                                        <i class="bi bi-check-circle"></i> Xác nhận
+                                    </button>
+                                    <button class="btn btn-danger" @onclick="() => CancelBill(bill.IDBill)">
+                                        <i class="bi bi-x-circle"></i> Hủy
+                                    </button>
+                                }
+                                @if (bill.Status == "Đã xác nhận")
+                                {
+                                    <button class="btn btn-warning me-3" @onclick="() => CompleteBill(bill.IDBill)">
+                                        <i class="bi bi-check-circle"></i> Hoàn thành
+                                    </button>
+                                }
+                                <button class="btn btn-info" @onclick="() => NavigateToBillDetails(bill.IDBill)">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Phân trang -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPageSale == 1 ? "disabled" : "") m-2">
+                        <a class="page-link text-black" aria-label="Previous" @onclick="() => ChangePageSaleBills(currentPageSale - 1)">
+                            <span aria-hidden="true"><i class="bi bi-caret-left-fill"></i></span>
+                        </a>
+                    </li>
+                    @for (var i = currentPageSale - 2; i <= currentPageSale + 2; i++)
+                    {
+                        int j = i;
+                        if (i > 0 && i <= totalPageSales)
+                        {
+                            <li class="page-item @(currentPageSale == i ? "selected" : "") m-2">
+                                <a class="page-link text-black" @onclick="() => ChangePageSaleBills(j)">
+                                    <span>@i</span>
+                                </a>
+                            </li>
+                        }
+                    }
+                    <li class="page-item @(currentPageSale == totalPageSales ? "disabled" : "") m-2">
+                        <a class="page-link text-black" aria-label="Next" @onclick="() => ChangePageSaleBills(currentPageSale + 1)">
+                            <span aria-hidden="true"><i class="bi bi-caret-right-fill"></i></span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+</div>
+@code {
+    private string userName;
+    private bool isLoading = true;
+    private string errorMessage;
+    private AccountInfoDto accountInfo;
+    private bool IsLoggedIn { get; set; } = false;
+    private string searchQuery;
+    private List<BillModel> bills;
+    private List<BillModel> allBills;
+    private string searchFullName;
+    private int? searchIDBill;
+    private List<BillDetailModel> allBillDetails = new List<BillDetailModel>();
+    private List<BillModel> saleBills = new List<BillModel>();
+    private int totalBuyCompletedBills = 0;
+    private int totalSellCompletedBills = 0;
+    private string searchSaleFullName;
+    private int? searchSaleIDBill;
+    private List<BillModel> filteredSaleBills = new List<BillModel>();
+    private int currentPage = 1;
+    private int totalPages;
+    private int pageSize = 3;
+    private int currentPageSale = 1;
+    private int totalPageSales;
+    private int pageSizeSale = 3;
+    private List<BillModel> orderBills;
+    private List<BillModel> billSales;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBill();
+        CountCompletedBills();
+        filteredSaleBills = new List<BillModel>(saleBills);
+        UpdatePageBills();
+        UpdatePageSaleBills();
+    }
+
+    private void UpdatePageBills()
+    {
+        var listbill = bills.Where(x => x.UserName == userName).ToList();
+        totalPages = listbill.Any() ? (int)Math.Ceiling((double)listbill.Count / pageSize) : 1;
+        orderBills = listbill.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+    }
+
+
+    private void ChangePage(int page)
+    {
+        currentPage = page;
+        UpdatePageBills();
+    }
+
+    private void UpdatePageSaleBills()
+    {
+        var listbillSale = saleBills.ToList();
+        totalPageSales = listbillSale.Any() ? (int)Math.Ceiling((double)listbillSale.Count / pageSizeSale) : 1;
+        billSales = listbillSale.Skip((currentPageSale - 1) * pageSizeSale).Take(pageSizeSale).ToList();
+    }
+
+
+    private void ChangePageSaleBills(int page)
+    {
+        currentPageSale = page;
+        UpdatePageSaleBills();
+    }
+
+    private string GetStatusBadge(string status) => status switch
+    {
+        "Đã xác nhận" => "bg-success",
+        "Chờ xác nhận" => "bg-warning",
+        "Đã hủy" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private async Task SearchBills()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(searchFullName))
+            {
+                bills = await httpClient.GetFromJsonAsync<List<BillModel>>($"api/Bill/GetBillsByUserName/{searchFullName}");
+            }
+            else if (searchIDBill.HasValue)
+            {
+                var bill = await httpClient.GetFromJsonAsync<BillModel>($"api/Bill/GetBillsByIDBill/{searchIDBill.Value}");
+                bills = bill != null ? new List<BillModel> { bill } : new List<BillModel>();
+            }
+            else
+            {
+                bills = new List<BillModel>(allBills);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi khi tìm kiếm hóa đơn: " + ex.Message);
+            bills = new List<BillModel>();
+        }
+    }
+    private void SearchSaleBills()
+    {
+        try
+        {
+            filteredSaleBills = saleBills;
+
+            if (!string.IsNullOrWhiteSpace(searchSaleFullName))
+            {
+                filteredSaleBills = filteredSaleBills
+                    .Where(b => b.FullName.Contains(searchSaleFullName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            if (searchSaleIDBill.HasValue)
+            {
+                filteredSaleBills = filteredSaleBills
+                    .Where(b => b.IDBill == searchSaleIDBill.Value)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi khi tìm kiếm hóa đơn bán: " + ex.Message);
+            filteredSaleBills = new List<BillModel>();
+        }
+    }
+
+
+    private async Task LoadBill()
+    {
+        try
+        {
+            await CheckTokenAndLoadAccountInfo();
+
+            allBills = await httpClient.GetFromJsonAsync<List<BillModel>>("api/Bill/GetBill");
+            bills = new List<BillModel>(allBills);
+
+            foreach (var bill in allBills)
+            {
+                var billDetails = await httpClient.GetFromJsonAsync<List<BillDetailModel>>($"api/BillDetail/GetBillDetailsByIDBill/{bill.IDBill}");
+                bill.BillDetails = billDetails ?? new List<BillDetailModel>();
+
+                foreach (var detail in bill.BillDetails)
+                {
+                    var product = await httpClient.GetFromJsonAsync<ProductModel>($"api/Product/GetProductById/{detail.IDProduct}");
+
+                    if (product != null)
+                    {
+                        if (product.UserName == userName)
+                        {
+                            saleBills.Add(bill); // Đây là đơn hàng bán của người dùng
+                            break;
+                        }
+                    }
+                }
+
+                allBillDetails.AddRange(billDetails);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi khi tải dữ liệu: " + ex.Message);
+            bills = new List<BillModel>();
+            saleBills = new List<BillModel>();
+            allBillDetails = new List<BillDetailModel>();
+        }
+    }
+
+    // Đếm số lượng đơn hàng hoàn thành cho mua và bán
+    private void CountCompletedBills()
+    {
+        totalBuyCompletedBills = 0;
+        totalSellCompletedBills = 0;
+
+        foreach (var bill in bills)
+        {
+            if (bill.Status == "Hoàn thành")
+            {
+                // Kiểm tra đơn hàng mua
+                if (bill.UserName == userName)
+                {
+                    totalBuyCompletedBills++;
+                }
+
+                // Kiểm tra đơn hàng bán
+                if (bill.SellerUserName == userName)
+                {
+                    totalSellCompletedBills++;
+                }
+            }
+        }
+    }
+
+    private async Task AcceptBill(int idBill)
+    {
+        try
+        {
+            var response = await httpClient.PostAsync($"api/Bill/AcceptBill/{idBill}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var billDetails = await httpClient.GetFromJsonAsync<List<BillDetailModel>>($"api/BillDetail/GetBillDetailsByIDBill/{idBill}");
+
+                if (billDetails != null && billDetails.Any())
+                {
+                    foreach (var detail in billDetails)
+                    {
+                        var idProduct = detail.IDProduct;
+
+                        var result = await httpClient.PostAsync($"api/CartItem/afterAccep/{idProduct}", null);
+                        if (result.IsSuccessStatusCode)
+                        {
+                            Console.WriteLine($"Sản phẩm với ID {idProduct} đã được xử lý thành công.");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Có lỗi khi xử lý sản phẩm với ID {idProduct}");
+                        }
+                    }
+                }
+
+                await jsrunetime.InvokeVoidAsync("alert", "Đơn hàng đã được xác nhận!");
+                NavigationManager.NavigateTo("/bill", forceLoad: true);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                if (errorContent.Contains("<html"))
+                {
+                    await jsrunetime.InvokeVoidAsync("alert", "Đã xảy ra lỗi với API hoặc bạn chưa đăng nhập.");
+                    NavigationManager.NavigateTo("/login");
+                }
+                else
+                {
+                    await jsrunetime.InvokeVoidAsync("alert", errorContent);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await jsrunetime.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+    private async Task CancelBill(int idBill)
+    {
+        try
+        {
+            var response = await httpClient.PostAsync($"api/Bill/CancelBill/{idBill}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await jsrunetime.InvokeVoidAsync("alert", "Đơn hàng đã được hủy xác nhận!");
+
+                await LoadBill();
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                if (errorContent.Contains("<html"))
+                {
+                    await jsrunetime.InvokeVoidAsync("alert", "Đã xảy ra lỗi với API hoặc bạn chưa đăng nhập.");
+                    NavigationManager.NavigateTo("/login");
+                }
+                else
+                {
+                    await jsrunetime.InvokeVoidAsync("alert", errorContent);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await jsrunetime.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+    private void NavigateToBillDetails(int IDBill)
+    {
+        NavigationManager.NavigateTo($"/BillDetail/{IDBill}");
+    }
+    public class BillDetailModel
+    {
+        public int IDDetail { get; set; }
+        public int IDBill { get; set; }
+        public string ProductName { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public int IDProduct { get; set; }
+    }
+    public class BillModel
+    {
+        public int IDBill { get; set; }
+        public string FullName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string DeliveryAddress { get; set; }
+        public DateTime OrderDate { get; set; }
+        public string PaymentType { get; set; }
+        public decimal Total { get; set; }
+        public string Status { get; set; }
+        public string UserName { get; set; }
+        public string SellerUserName { get; set; }
+        public List<BillDetailModel> BillDetails { get; set; } = new List<BillDetailModel>();
+    }
+    public class ProductModel
+    {
+        public int IDProduct { get; set; }
+        public string ProductName { get; set; }
+        public string UserName { get; set; }
+        public decimal Price { get; set; }
+        public string Description { get; set; }
+    }
+    private async Task CheckTokenAndLoadAccountInfo()
+    {
+        var token = await jsrunetime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            await LoadAccountInfo();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+    private class AccountInfoDto
+    {
+        public string UserName { get; set; }
+        public string FullName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Gender { get; set; }
+        public DateTime? Birthday { get; set; }
+        public string ImageAccount { get; set; }
+    }
+
+    private async Task LoadAccountInfo()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var response = await httpClient.GetAsync("api/User/GetMyInfo");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var accountInfo = await response.Content.ReadFromJsonAsync<AccountInfoDto>();
+                IsLoggedIn = true;
+                userName = accountInfo.UserName;
+            }
+            else
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                IsLoggedIn = false;
+                NavigationManager.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Có lỗi xảy ra: {ex.Message}";
+            IsLoggedIn = false;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CompleteBill(int idBill)
+    {
+        try
+        {
+            var response = await httpClient.PostAsync($"api/Bill/done/{idBill}?status=Hoàn thành", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await jsrunetime.InvokeVoidAsync("alert", "Hóa đơn đã được hoàn thành!");
+                NavigationManager.NavigateTo("/bill", forceLoad: true);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                await jsrunetime.InvokeVoidAsync("alert", $"Lỗi: {errorContent}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await jsrunetime.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+
+    private async Task ReceivedBill(int idBill)
+    {
+        try
+        {
+            var response = await httpClient.PostAsync($"api/Bill/done/{idBill}?status=Hoàn thành", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await jsrunetime.InvokeVoidAsync("alert", "Hóa đơn đã được xác nhận là đã nhận!");
+                NavigationManager.NavigateTo("/bill", forceLoad: true);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                await jsrunetime.InvokeVoidAsync("alert", $"Lỗi: {errorContent}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await jsrunetime.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+
+}
